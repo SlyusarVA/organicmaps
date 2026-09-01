@@ -58,8 +58,8 @@ public final class MainActivity extends Activity implements LifecycleOwner
 
     showBootstrapUi();
 
-    mOrganicMaps = new OrganicMaps(this, BuildConfig.FLAVOR, getPackageName(), BuildConfig.VERSION_CODE,
-                                   BuildConfig.VERSION_NAME);
+    mOrganicMaps =
+        new OrganicMaps(this, BuildConfig.FLAVOR, getPackageName(), BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME);
 
     try
     {
