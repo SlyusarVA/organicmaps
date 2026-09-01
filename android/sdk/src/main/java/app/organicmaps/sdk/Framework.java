@@ -403,6 +403,7 @@ public class Framework
   public static native void nativeSetShowDownloadedRegions(boolean show);
 
   public static native void nativeSetViewportCenter(double lat, double lon, int zoom);
+  public static native void nativeSetViewportCenterImmediately(double lat, double lon, int zoom);
   public static native void nativeStopLocationFollow();
 
   public static native void nativeSetSearchViewport(double lat, double lon, int zoom);

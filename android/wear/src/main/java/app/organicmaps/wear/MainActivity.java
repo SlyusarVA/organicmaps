@@ -140,8 +140,6 @@ public final class MainActivity extends Activity implements LifecycleOwner
 
     try
     {
-      seedInitialViewport();
-
       MapView mapView = new MapView(this);
       MapRenderingListener renderingListener = new MapRenderingListener() {
         @Override
@@ -192,19 +190,13 @@ public final class MainActivity extends Activity implements LifecycleOwner
     }
   }
 
-  private void seedInitialViewport()
-  {
-    Framework.nativeSetViewportCenter(TEST_LAT, TEST_LON, TEST_ZOOM);
-    Log.i(TAG, "Initial viewport seeded before Drape engine creation");
-  }
-
   private void centerOnTestArea()
   {
     runOnUiThread(() -> {
       try
       {
-        Framework.nativeSetViewportCenter(TEST_LAT, TEST_LON, TEST_ZOOM);
-        Log.i(TAG, "Drape renderer active; viewport centered on Terskol test area");
+        Framework.nativeSetViewportCenterImmediately(TEST_LAT, TEST_LON, TEST_ZOOM);
+        Log.i(TAG, "Drape renderer active; viewport centered immediately on Terskol test area");
       }
       catch (RuntimeException | UnsatisfiedLinkError e)
       {
