@@ -1,8 +1,6 @@
 package app.organicmaps.wear;
 
 import android.app.Activity;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -32,7 +30,6 @@ import java.io.IOException;
 public final class MainActivity extends Activity implements LifecycleOwner
 {
   private static final String TAG = MainActivity.class.getSimpleName();
-  private static final String FLAVOR_GOOGLE = "google";
 
   // Fixed initial viewport for the hardware PoC: Terskol / Elbrus area.
   private static final double TEST_LAT = 43.2550;
@@ -61,18 +58,16 @@ public final class MainActivity extends Activity implements LifecycleOwner
 
     showBootstrapUi();
 
+    mOrganicMaps = new OrganicMaps(this, BuildConfig.FLAVOR, getPackageName(), BuildConfig.VERSION_CODE,
+                                   BuildConfig.VERSION_NAME);
+
     try
     {
-      PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-      int versionCode = packageInfo.versionCode;
-      String versionName = packageInfo.versionName != null ? packageInfo.versionName : "wear-poc";
-
-      mOrganicMaps = new OrganicMaps(this, FLAVOR_GOOGLE, getPackageName(), versionCode, versionName);
       boolean started = mOrganicMaps.init(() -> runOnUiThread(this::showMap));
       if (!started && mOrganicMaps.arePlatformAndCoreInitialized())
         showMap();
     }
-    catch (IOException | PackageManager.NameNotFoundException | RuntimeException e)
+    catch (IOException | RuntimeException e)
     {
       Log.e(TAG, "Organic Maps core initialization failed", e);
       showFailure("Core init failed\n" + e.getClass().getSimpleName());
@@ -128,8 +123,9 @@ public final class MainActivity extends Activity implements LifecycleOwner
     status.setText("Initializing\nOrganic Maps core…");
     status.setTextSize(13);
 
-    FrameLayout.LayoutParams statusParams = new FrameLayout.LayoutParams(
-        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+    FrameLayout.LayoutParams statusParams =
+        new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                                     Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
     int padding = getResources().getDimensionPixelSize(R.dimen.screen_padding);
     statusParams.setMargins(padding, padding, padding, padding * 2);
     mRoot.addView(status, statusParams);
@@ -139,14 +135,13 @@ public final class MainActivity extends Activity implements LifecycleOwner
 
   private void showMap()
   {
-    if (isFinishing() || isDestroyed() || mMapController != null || mOrganicMaps == null)
+    if (isFinishing() || isDestroyed() || mMapController != null)
       return;
 
     try
     {
       MapView mapView = new MapView(this);
-      MapRenderingListener renderingListener = new MapRenderingListener()
-      {
+      MapRenderingListener renderingListener = new MapRenderingListener() {
         @Override
         public void onRenderingCreated()
         {
@@ -171,8 +166,8 @@ public final class MainActivity extends Activity implements LifecycleOwner
       getLifecycle().addObserver(mMapController);
 
       mRoot.removeAllViews();
-      mRoot.addView(mapView, new FrameLayout.LayoutParams(
-          ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+      mRoot.addView(mapView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                          ViewGroup.LayoutParams.MATCH_PARENT));
 
       TextView badge = new TextView(this);
       badge.setText("OM Drape P1");
@@ -180,9 +175,9 @@ public final class MainActivity extends Activity implements LifecycleOwner
       badge.setGravity(Gravity.CENTER);
       int padding = Math.max(4, getResources().getDimensionPixelSize(R.dimen.screen_padding) / 3);
       badge.setPadding(padding, padding / 2, padding, padding / 2);
-      FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(
-          ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
-          Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+      FrameLayout.LayoutParams badgeParams =
+          new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                                       Gravity.TOP | Gravity.CENTER_HORIZONTAL);
       badgeParams.topMargin = padding;
       mRoot.addView(badge, badgeParams);
 
@@ -222,8 +217,8 @@ public final class MainActivity extends Activity implements LifecycleOwner
       error.setTextSize(13);
       int padding = getResources().getDimensionPixelSize(R.dimen.screen_padding);
       error.setPadding(padding, padding, padding, padding);
-      mRoot.addView(error, new FrameLayout.LayoutParams(
-          ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+      mRoot.addView(error, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                        ViewGroup.LayoutParams.MATCH_PARENT));
     });
   }
 }
