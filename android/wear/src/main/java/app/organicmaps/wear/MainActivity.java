@@ -1,6 +1,8 @@
 package app.organicmaps.wear;
 
 import android.app.Activity;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -13,7 +15,6 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LifecycleRegistry;
 import app.organicmaps.sdk.Framework;
-import app.organicmaps.sdk.Map;
 import app.organicmaps.sdk.MapController;
 import app.organicmaps.sdk.MapRenderingListener;
 import app.organicmaps.sdk.MapView;
@@ -31,6 +32,7 @@ import java.io.IOException;
 public final class MainActivity extends Activity implements LifecycleOwner
 {
   private static final String TAG = MainActivity.class.getSimpleName();
+  private static final String FLAVOR_GOOGLE = "google";
 
   // Fixed initial viewport for the hardware PoC: Terskol / Elbrus area.
   private static final double TEST_LAT = 43.2550;
@@ -43,7 +45,6 @@ public final class MainActivity extends Activity implements LifecycleOwner
   private OrganicMaps mOrganicMaps;
   private MapController mMapController;
   private FrameLayout mRoot;
-  private TextView mStatus;
 
   @NonNull
   @Override
@@ -60,16 +61,18 @@ public final class MainActivity extends Activity implements LifecycleOwner
 
     showBootstrapUi();
 
-    mOrganicMaps = new OrganicMaps(this, BuildConfig.FLAVOR, getPackageName(), BuildConfig.VERSION_CODE,
-                                   BuildConfig.VERSION_NAME);
-
     try
     {
+      PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+      int versionCode = packageInfo.versionCode;
+      String versionName = packageInfo.versionName != null ? packageInfo.versionName : "wear-poc";
+
+      mOrganicMaps = new OrganicMaps(this, FLAVOR_GOOGLE, getPackageName(), versionCode, versionName);
       boolean started = mOrganicMaps.init(() -> runOnUiThread(this::showMap));
       if (!started && mOrganicMaps.arePlatformAndCoreInitialized())
         showMap();
     }
-    catch (IOException | RuntimeException e)
+    catch (IOException | PackageManager.NameNotFoundException | RuntimeException e)
     {
       Log.e(TAG, "Organic Maps core initialization failed", e);
       showFailure("Core init failed\n" + e.getClass().getSimpleName());
@@ -120,23 +123,23 @@ public final class MainActivity extends Activity implements LifecycleOwner
         ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
     mRoot.addView(progress, progressParams);
 
-    mStatus = new TextView(this);
-    mStatus.setGravity(Gravity.CENTER);
-    mStatus.setText("Initializing\nOrganic Maps core…");
-    mStatus.setTextSize(13);
+    TextView status = new TextView(this);
+    status.setGravity(Gravity.CENTER);
+    status.setText("Initializing\nOrganic Maps core…");
+    status.setTextSize(13);
 
     FrameLayout.LayoutParams statusParams = new FrameLayout.LayoutParams(
         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
     int padding = getResources().getDimensionPixelSize(R.dimen.screen_padding);
     statusParams.setMargins(padding, padding, padding, padding * 2);
-    mRoot.addView(mStatus, statusParams);
+    mRoot.addView(status, statusParams);
 
     setContentView(mRoot);
   }
 
   private void showMap()
   {
-    if (isFinishing() || isDestroyed() || mMapController != null)
+    if (isFinishing() || isDestroyed() || mMapController != null || mOrganicMaps == null)
       return;
 
     try
