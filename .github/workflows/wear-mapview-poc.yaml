@@ -1,0 +1,44 @@
+name: Wear MapView PoC
+
+on:
+  push:
+    branches:
+      - ai/wear-mapview-poc
+  workflow_dispatch:
+
+env:
+  JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
+
+jobs:
+  build-wear-mapview:
+    name: Build Wear MapView ARM64 APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install native build tools
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ninja-build
+
+      - name: Checkout sources
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 200
+
+      - name: Checkout submodules
+        run: git submodule update --depth 1 --init --recursive --jobs=$(($(nproc) * 20))
+
+      - name: Build Wear Google Debug ARM64
+        working-directory: android
+        run: ./gradlew -Parm64 :wear:assembleGoogleDebug
+
+      - name: List generated APKs
+        run: find android/wear/build/outputs/apk -type f -name '*.apk' -print
+
+      - name: Upload Wear APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: organicmaps-wear-mapview-poc-arm64
+          path: android/wear/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 30
