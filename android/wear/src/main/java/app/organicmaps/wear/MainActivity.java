@@ -140,6 +140,8 @@ public final class MainActivity extends Activity implements LifecycleOwner
 
     try
     {
+      seedInitialViewport();
+
       MapView mapView = new MapView(this);
       MapRenderingListener renderingListener = new MapRenderingListener() {
         @Override
@@ -183,11 +185,17 @@ public final class MainActivity extends Activity implements LifecycleOwner
 
       Log.i(TAG, "Organic Maps MapView attached; waiting for Drape renderer");
     }
-    catch (RuntimeException e)
+    catch (RuntimeException | UnsatisfiedLinkError e)
     {
       Log.e(TAG, "Failed to create Organic Maps MapView", e);
       showFailure("MapView failed\n" + e.getClass().getSimpleName());
     }
+  }
+
+  private void seedInitialViewport()
+  {
+    Framework.nativeSetViewportCenter(TEST_LAT, TEST_LON, TEST_ZOOM);
+    Log.i(TAG, "Initial viewport seeded before Drape engine creation");
   }
 
   private void centerOnTestArea()
