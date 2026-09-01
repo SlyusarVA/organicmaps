@@ -8,6 +8,10 @@ apply from: "${rootProject.rootDir}/groovy/application-signing.gradle"
 android {
     namespace 'app.organicmaps.wear'
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId rootProject.ext.appId
         // Keep the Wear artifact version code unique from the phone app while preserving
