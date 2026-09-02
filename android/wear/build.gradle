@@ -8,6 +8,10 @@ apply from: "${rootProject.rootDir}/groovy/application-signing.gradle"
 android {
     namespace 'app.organicmaps.wear'
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId rootProject.ext.appId
         // Keep the Wear artifact version code unique from the phone app while preserving
@@ -25,11 +29,23 @@ android {
             versionName = android.defaultConfig.versionName + '-Google'
         }
     }
+
+    compileOptions {
+        coreLibraryDesugaringEnabled = true
+    }
 }
 
 dependencies {
     implementation project(':libs:branding')
     implementation project(':libs:wear-protocol')
+
+    // P0/P1: reuse the existing Organic Maps Android SDK and native Drape renderer
+    // instead of duplicating the phone UI or implementing a Wear-specific renderer.
+    implementation project(':sdk')
+    implementation project(':sdk:maps:world')
+
+    coreLibraryDesugaring libs.android.tools.desugaring
+
     implementation libs.androidx.annotation
     implementation libs.google.gms.wearable
 

@@ -1809,6 +1809,12 @@ JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetViewportCenter(JNIEnv
   frm()->SetViewportCenter(mercator::FromLatLon(lat, lon), static_cast<int>(zoom), true /* isAnim */);
 }
 
+JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeSetViewportCenterImmediately(JNIEnv *, jclass, jdouble lat,
+                                                                                     jdouble lon, jint zoom)
+{
+  frm()->SetViewportCenter(mercator::FromLatLon(lat, lon), static_cast<int>(zoom), false /* isAnim */);
+}
+
 JNIEXPORT void Java_app_organicmaps_sdk_Framework_nativeStopLocationFollow(JNIEnv *, jclass)
 {
   frm()->StopLocationFollow();
