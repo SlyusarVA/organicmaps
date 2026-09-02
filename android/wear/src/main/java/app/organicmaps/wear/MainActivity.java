@@ -355,9 +355,21 @@ public final class MainActivity extends Activity implements LifecycleOwner
     BookmarkManager manager = BookmarkManager.INSTANCE;
     Set<Long> existingTrackIds = collectTrackIds(manager);
     mTrackImportListener = new BookmarkManager.BookmarksLoadingListener() {
+      private boolean mFileLoaded;
+
       @Override
       public void onBookmarksFileImportSuccessful()
       {
+        mFileLoaded = true;
+        setBadge("Opening GPX…");
+      }
+
+      @Override
+      public void onBookmarksLoadingFinished()
+      {
+        if (!mFileLoaded)
+          return;
+
         mRoot.post(MainActivity.this::removeTrackImportListener);
         long importedTrackId = findNewTrackId(manager, existingTrackIds);
         if (importedTrackId != 0)
